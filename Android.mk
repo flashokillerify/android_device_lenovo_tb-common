@@ -25,7 +25,7 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(filter TB8703 TBX704 TB8704,$(TARGET_DEVICE)),)
+ifneq ($(filter TBX505X TBX505F TBX505L,$(TARGET_DEVICE)),)
 
 include $(call all-subdir-makefiles,$(LOCAL_PATH))
 
