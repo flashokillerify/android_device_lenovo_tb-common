@@ -1,5 +1,6 @@
-#
-# Copyright 2019 The LineageOS Project
+# Copyright (C) 2009 The Android Open Source Project
+# Copyright (C) 2019 The Mokee Open Source Project
+# Copyright (C) 2019 The LineageOS Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,28 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# This contains the module build definitions for the hardware-specific
-# components for this device.
-#
-# As much as possible, those components should be built unconditionally,
-# with device-specific names to avoid collisions, to avoid device-specific
-# bitrot and build breakages. Building a component unconditionally does
-# *not* include it on all devices, so it is safe even with hardware-specific
-# components.
-
-def IncrementalOTA_InstallEnd(info):
-  info.script.Mount("/system")
-  RunCustomScript(info, "deunify.sh", "")
-  info.script.Unmount("/system")
-  return
+import common
+import re
 
 def FullOTA_InstallEnd(info):
-  info.script.Mount("/system")
-  RunCustomScript(info, "deunify.sh", "")
-  info.script.Unmount("/system")
+  OTA_InstallEnd(info)
+  return
 
-def RunCustomScript(info, name, arg):
-  info.script.AppendExtra(('run_program("/tmp/install/bin/%s", "%s");' % (name, arg)))
+def IncrementalOTA_InstallEnd(info):
+  OTA_InstallEnd(info)
+  return
+
+def AddImage(info, basename, dest):
+  name = basename
+  data = info.input_zip.read("IMAGES/" + basename)
+  common.ZipWriteStr(info.output_zip, name, data)
+  info.script.AppendExtra('package_extract_file("%s", "%s");' % (name, dest))
+
+def OTA_InstallEnd(info):
+  info.script.Print("Patching firmware images...")
+  AddImage(info, "vbmeta.img", "/dev/block/bootdevice/by-name/vbmeta")
   return
